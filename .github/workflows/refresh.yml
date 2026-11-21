@@ -1,0 +1,115 @@
+name: Auto Refresh Repository
+
+on:
+  schedule:
+    # Beijing Time 08:00 - 00:55 (UTC 00:00 - 16:55): every 5 minutes
+    - cron: '*/5 0-16 * * *'
+    # Beijing Time 01:00 - 07:59 (UTC 17:00 - 23:00): every 1 hour
+    - cron: '0 17-23 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: repo-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Update node status timestamp in README.md
+        run: |
+          python3 - << 'EOF'
+          import datetime, re
+          from zoneinfo import ZoneInfo
+
+          now_bjt = datetime.datetime.now(ZoneInfo("Asia/Shanghai")).strftime("%Y-%m-%d %H:%M:%S")
+          with open("README.md", "r", encoding="utf-8") as f:
+              content = f.read()
+
+          # Remove existing auto-update status footer block if present
+          pattern = r"\n+---\n+>\s*🕒\s*\*\*节点链路状态检测（自动更新）\*\*.*$"
+          cleaned = re.sub(pattern, "", content.rstrip(), flags=re.DOTALL).rstrip()
+          # Also fallback in case only the blockquote exists without ---
+          cleaned = re.sub(r"\n+>\s*🕒\s*\*\*节点链路状态检测（自动更新）\*\*.*$", "", cleaned, flags=re.DOTALL).rstrip()
+
+          new_footer = f"\n\n---\n\n> 🕒 **节点链路状态检测（自动更新）**：`{now_bjt}` — 专线运行正常 | 9 折优惠码：`xiyou.me`\n"
+          with open("README.md", "w", encoding="utf-8") as f:
+              f.write(cleaned + new_footer)
+          EOF
+
+      - name: Commit and push README.md
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          if ! git diff --cached --quiet; then
+            NOW_BJT=$(TZ=Asia/Shanghai date "+%Y-%m-%d %H:%M:%S")
+            git commit -m "chore: update node status ($NOW_BJT)"
+            git push
+          fi
+
+      - name: Daily Release check & prune
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          python3 - << 'EOF'
+          import datetime, json, os, urllib.request, urllib.error
+          from zoneinfo import ZoneInfo
+
+          token = os.environ["GH_TOKEN"]
+          repo = os.environ["REPO"]
+          hdrs = {
+              "Authorization": f"Bearer {token}",
+              "Accept": "application/vnd.github.v3+json",
+              "User-Agent": "GitHub-Actions-Refresh",
+              "Content-Type": "application/json",
+          }
+
+          def api(ep, method="GET", payload=None):
+              url = f"https://api.github.com/repos/{repo}/{ep}"
+              data = json.dumps(payload).encode("utf-8") if payload is not None else None
+              r = urllib.request.Request(url, data=data, headers=hdrs, method=method)
+              try:
+                  with urllib.request.urlopen(r, timeout=20) as resp:
+                      raw = resp.read().decode("utf-8")
+                      return resp.status, (json.loads(raw) if raw else {})
+              except urllib.error.HTTPError as e:
+                  return e.code, e.read().decode("utf-8")
+
+          st, rels = api("releases?per_page=30")
+          should_release = False
+          if st == 200:
+              if not rels:
+                  should_release = True
+              else:
+                  created = datetime.datetime.strptime(rels[0]["created_at"], "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=datetime.timezone.utc)
+                  elapsed = (datetime.datetime.now(datetime.timezone.utc) - created).total_seconds()
+                  print(f"Latest release elapsed: {elapsed/3600:.1f}h")
+                  if elapsed >= 23 * 3600:
+                      should_release = True
+
+          if should_release:
+              tag_str = datetime.datetime.now(ZoneInfo("Asia/Shanghai")).strftime("%Y.%m.%d.%H%M")
+              st2, _ = api("releases", "POST", {
+                  "tag_name": f"v{tag_str}",
+                  "name": f"{tag_str} 优质纯净专线状态更新",
+                  "body": "本版本推荐经长期实测表现卓越的西游云（Xiyou Cloud）纯净原生节点，全面适配 Antigravity / Claude / ChatGPT / TikTok / 跨境电商，支持按量不限时流量包与 9 折优惠码：xiyou.me。",
+                  "draft": False,
+                  "prerelease": False,
+              })
+              print("Create release status:", st2)
+              st3, rels_after = api("releases?per_page=30")
+              if st3 == 200 and len(rels_after) > 10:
+                  for old in rels_after[10:]:
+                      api(f"releases/{old['id']}", "DELETE")
+                      if old.get("tag_name"):
+                          api(f"git/refs/tags/{old['tag_name']}", "DELETE")
+                  print(f"Pruned {len(rels_after) - 10} old releases.")
+          EOF
