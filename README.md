@@ -62,6 +62,7 @@
 > [!TIP]
 > 👉 **[🌐 西游云官方入口（智能测速线路）](https://e.xiyou666.xyz/?code=ZMZlSrIf)**  
 > 👉 **[⚡ 西游云备用快速直达通道](https://e.xiyou666.xyz/?code=ZMZlSrIf)**  
+> 👉 **[🔒 西游云备用永久官网（需翻墙访问）](https://xiyou.me/?path=register&code=ZMZlSrIf)**  
 >
 > 🎁 **专属福利**：9 折优惠码：`xiyou.me`（下单时在结算页填入即可享受折扣）
 
