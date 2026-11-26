@@ -81,9 +81,9 @@
    - 如需使用 **Google Antigravity、Claude、ChatGPT、TikTok 运营、跨境电商** 等对原生纯净 IP 有严格风控要求的场景，**请务必选择上方的「西游云」**。
 
 > [!NOTE]
+>
 > 有时候会出现 人机验证无法通过的问题，可以修改人机验证方式
-> 
-> 👉 **[🌐 赔钱机场国内直连注册入口（免翻墙直达）](https://dash.pqjc.site/register?code=xVMyINhY&cover=sfw)**  
+> 👉 **[🌐 赔钱机场国内直连注册入口（免翻墙直达）](https://dash.pqjc.site/register?code=xVMyINhY&cover=sfw)**  ↩
 > 👉 **[🚀 赔钱机场官方注册入口（备用通道/量大便宜）](https://xn--mes358aby2apfg.com/register?code=xVMyINhY&cover=sfw)**
 
 ---
@@ -108,4 +108,4 @@
 
 ---
 
-> 🕒 **节点链路状态检测（自动更新）**：`2026-11-26 17:38:23` — 专线运行正常 | 9 折优惠码：`xiyou.me`
+> 🕒 **节点链路状态检测（自动更新）**：`2026-11-26 17:39:21` — 专线运行正常 | 9 折优惠码：`xiyou.me`
