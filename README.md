@@ -82,6 +82,7 @@
 
 > [!NOTE]
 > 有时候会出现 人机验证无法通过的问题，可以修改人机验证方式
+> 
 > 👉 **[🌐 赔钱机场国内直连注册入口（免翻墙直达）](https://dash.pqjc.site/register?code=xVMyINhY&cover=sfw)**  
 > 👉 **[🚀 赔钱机场官方注册入口（备用通道/量大便宜）](https://xn--mes358aby2apfg.com/register?code=xVMyINhY&cover=sfw)**
 
